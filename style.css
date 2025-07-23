@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+:root {
+  --orange: #ff7f50;
+  --background-light: linear-gradient(135deg, #fff8f0 0%, #ffeee6 100%);
+  --text-dark: #2c2c2c;
+  --text-light: #ffffff;
+  --shadow: rgba(255, 127, 80, 0.2);
+  --shadow-dark: rgba(0, 0, 0, 0.15);
+  --accent-light: rgba(255, 255, 255, 0.2);
+  --border-radius: 16px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--background-light);
+  color: var(--text-dark);
+  margin: 0;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  transition: var(--transition);
+  line-height: 1.6;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 127, 80, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 127, 80, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  margin-bottom: 3rem;
+  background: linear-gradient(135deg, var(--orange) 0%, #ff6b35 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  letter-spacing: -0.02em;
+  position: relative;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--orange), #ff6b35);
+  border-radius: 2px;
+  animation: slideIn 1s ease-out 0.5s both;
+}
+
+#game-list {
+  width: 100%;
+  max-width: 450px;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, var(--orange) 0%, #ff6b35 100%);
+  border-radius: var(--border-radius);
+  box-shadow: 
+    0 20px 40px var(--shadow),
+    0 8px 16px var(--shadow-dark),
+    inset 0 1px 0 var(--accent-light);
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 1.2rem;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  user-select: none;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInScale 0.8s ease-out 0.2s both;
+}
+
+#game-list::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+#game-list:hover::before {
+  left: 100%;
+}
+
+#game-list:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 25px 50px var(--shadow),
+    0 12px 24px var(--shadow-dark),
+    inset 0 1px 0 var(--accent-light);
+}
+
+label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  color: var(--text-dark);
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+  user-select: none;
+  letter-spacing: -0.01em;
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+select {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  border: 2px solid transparent;
+  background: 
+    linear-gradient(white, white) padding-box,
+    linear-gradient(135deg, var(--orange), #ff6b35) border-box;
+  box-shadow: 
+    0 8px 20px var(--shadow),
+    0 4px 8px var(--shadow-dark);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: 'Inter', sans-serif;
+  min-width: 200px;
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+select:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 12px 30px var(--shadow),
+    0 6px 12px var(--shadow-dark);
+}
+
+select:focus {
+  outline: none;
+  transform: translateY(-1px);
+  box-shadow: 
+    0 12px 30px var(--shadow),
+    0 6px 12px var(--shadow-dark),
+    0 0 0 3px rgba(255, 127, 80, 0.3);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    width: 0;
+  }
+  to {
+    width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 1.5rem 1rem;
+  }
+  
+  #game-list {
+    padding: 2rem;
+    min-height: 120px;
+  }
+  
+  label {
+    margin-top: 2rem;
+  }
+}
