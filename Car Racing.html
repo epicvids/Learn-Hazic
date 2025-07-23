@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Car Racing</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+      background: #333;
+    }
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #555;
+      overflow: hidden;
+    }
+    #road {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #222;
+      background-image: url('https://illustoon.com/photo/12531.png'); /* Track sprite */
+      background-size: cover;
+      background-position: center;
+      animation: scrollRoad 1s linear infinite;
+    }
+    @keyframes scrollRoad {
+      0% { background-position-x: 0; }
+      100% { background-position-x: 100%; }
+    }
+    #player-car {
+      position: absolute;
+      width: 90px;
+      height: 200px;
+      bottom: 20%;
+      background-size: cover;
+      background-position: center;
+      transition: left 0.2s;
+      background-image: url('https://static.vecteezy.com/system/resources/previews/026/790/814/non_2x/top-view-red-car-cartoon-concept-cartoon-transport-free-png.png'); /* your sprite here-classic car */
+    }
+    .enemy-car {
+      position: absolute;
+      width: 90px;
+      height: 200px;
+      background-image: url('https://static.vecteezy.com/system/resources/previews/036/331/334/non_2x/cars-top-view-png.png'); /* your sprite here-enemy car */
+      background-size: cover;
+      background-position: center;
+      transform: rotate(180deg);
+    }
+    #coin-counter {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 20px;
+      color: #fff;
+      background: rgba(0,0,0,0.5);
+      padding: 5px 10px;
+      border-radius: 5px;
+      user-select: none;
+    }
+    #earn-coins-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: orange;
+      color: #fff;
+      border: none;
+      padding: 15px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease;
+      user-select: none;
+    }
+    #earn-coins-btn:hover {
+      transform: scale(1.05);
+    }
+    #go-garage-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: #008CBA;
+      color: #fff;
+      border: none;
+      padding: 15px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease;
+      user-select: none;
+    }
+    #go-garage-btn:hover {
+      transform: scale(1.05);
+    }
+    #quiz-modal, #garage-modal {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 450px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      text-align: center;
+      max-height: 80vh;
+      overflow-y: auto;
+      user-select: none;
+    }
+    #quiz-question {
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    .quiz-btn {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .quiz-btn:hover {
+      background: #2980b9;
+    }
+    #close-quiz, #close-garage {
+      margin-top: 10px;
+      background: #e74c3c;
+    }
+    /* Garage styles */
+    .car-item {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .car-item:hover {
+      background-color: #f0f0f0;
+    }
+    .car-sprite {
+      width: 90px;
+      height: 60px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      flex-shrink: 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .car-info {
+      flex-grow: 1;
+      text-align: left;
+      font-size: 16px;
+    }
+    .car-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .car-speed {
+      font-style: italic;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .car-price {
+      font-weight: bold;
+      color: #333;
+    }
+    .car-selected {
+      background-color: #cce5ff;
+      border-color: #3399ff;
+    }
+    #invincible-uses {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #b22222;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="road"></div>
+    <div id="player-car"></div>
+    <div id="coin-counter">Coins: 0</div>
+    <button id="earn-coins-btn">Earn Coins</button>
+    <button id="go-garage-btn">Go to Garage</button>
+
+    <!-- Quiz Modal -->
+    <div id="quiz-modal">
+      <div id="quiz-question">Question text here</div>
+      <button class="quiz-btn" data-answer="A">Option A</button>
+      <button class="quiz-btn" data-answer="B">Option B</button>
+      <button class="quiz-btn" data-answer="C">Option C</button>
+      <button class="quiz-btn" data-answer="D">Option D</button>
+      <button id="close-quiz" class="quiz-btn">Exit Quiz</button>
+    </div>
+
+    <!-- Garage Modal -->
+    <div id="garage-modal">
+      <h2>Your Garage</h2>
+      <div id="car-list"></div>
+      <div id="invincible-uses" style="display:none;"></div>
+      <button id="close-garage" class="quiz-btn">Close Garage</button>
+    </div>
+  </div>
+
+  <script>
+    let coins = 0;
+    let invincibleUses = 0;
+    const coinCounter = document.getElementById('coin-counter');
+    const playerCar = document.getElementById('player-car');
+    const gameContainer = document.getElementById('game-container');
+
+    const laneWidth = 90;
+    const screenCenter = window.innerWidth / 2;
+    const laneOffsets = [-laneWidth, 0];
+    let currentLane = 0;
+    const playerY = window.innerHeight * 0.6;
+
+    // Cars data
+    const cars = [
+      {
+        id: 'classic',
+        name: 'Classic Car',
+        price: 0,
+        speed: 4,
+        sprite: 'https://static.vecteezy.com/system/resources/previews/026/790/814/non_2x/top-view-red-car-cartoon-concept-cartoon-transport-free-png.png', // your sprite here-classic car
+        description: 'Slow speed',
+        invincible: false,
+        maxUses: 0,
+      },
+      {
+        id: 'blue-lightning',
+        name: 'Blue Lightning',
+        price: 10,
+        speed: 6,
+        sprite: 'https://i.pinimg.com/736x/c2/eb/ab/c2ebab260debd0493cbec79fc7d9a947.jpg',
+        description: 'Medium speed',
+        invincible: false,
+        maxUses: 0,
+      },
+      {
+        id: 'the-enemy',
+        name: 'The Enemy',
+        price: 10,
+        speed: 6,
+        sprite: 'https://static.vecteezy.com/system/resources/previews/036/331/334/non_2x/cars-top-view-png.png',
+        description: 'Medium speed',
+        invincible: false,
+        maxUses: 0,
+      },
+      {
+        id: 'the-bull',
+        name: 'The Bull',
+        price: 15,
+        speed: 8,
+        sprite: 'https://png.pngtree.com/png-clipart/20230914/original/pngtree-car-top-view-vector-png-image_12159441.png',
+        description: 'Medium-fast speed',
+        invincible: false,
+        maxUses: 0,
+      },
+      {
+        id: 'thunder',
+        name: 'Thunder',
+        price: 30,
+        speed: 10,
+        sprite: 'https://png.pngtree.com/png-vector/20230110/ourmid/pngtree-car-top-view-image-png-image_6557068.png',
+        description: 'Fast speed',
+        invincible: false,
+        maxUses: 0,
+      },
+      {
+        id: 'purple',
+        name: 'Purple',
+        price: 50,
+        speed: 12,
+        sprite: '<img src="https://www.clipartmax.com/png/full/17-172638_clipart-car-top-view-image-of-8571-modern-vector-cartoon-car-from.png" alt="Clipart Car Top View Image Of 8571 Modern Vector - Cartoon Car From Birds  Eye View - (600x1255) Png Clipart Download"/>',
+        description: 'Really fast speed',
+        invincible: false,
+        maxUses: 0,
+      },
+      {
+        id: 'the-demon',
+        name: 'The Demon',
+        price: 300,
+        speed: 14,
+        sprite: '<img src="https://cdn-icons-png.flaticon.com/512/0/798.png" alt="Car top view - Free transport icons"/>',
+        description: 'Makes you invincible, 3 uses',
+        invincible: true,
+        maxUses: 3,
+      }
+    ];
+
+    // State: what cars player owns & selected
+    let ownedCars = new Set(['classic']); // own classic by default
+    let selectedCarId = 'classic';
+
+    // Invincible uses remaining for The Demon
+    let demonUsesLeft = 0;
+
+    // Position player car on correct lane
+    function updatePlayerPosition() {
+      playerCar.style.left = `${screenCenter + laneOffsets[currentLane]}px`;
+      playerCar.style.top = `${playerY}px`;
+    }
+    updatePlayerPosition();
+
+    // Update player car sprite & speed based on selectedCarId
+    function updatePlayerCar() {
+      const car = cars.find(c => c.id === selectedCarId);
+      if (!car) return;
+      if (car.sprite.startsWith('http')) {
+        playerCar.style.backgroundImage = `url(${car.sprite})`;
+      } else {
+        // If sprite is a placeholder string, just clear or set a default color
+        playerCar.style.backgroundImage = 'none';
+        playerCar.style.backgroundColor = '#666'; // fallback color
+        // Could optionally add text or something here
+      }
+      playerSpeed = car.speed;
+      demonUsesLeft = car.invincible ? car.maxUses : 0;
+      updateInvincibleUsesDisplay();
+    }
+    updatePlayerCar();
+
+    // Movement controls (left/right only)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+        currentLane = 0;
+        updatePlayerPosition();
+      }
+      if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+        currentLane = 1;
+        updatePlayerPosition();
+      }
+    });
+
+    // Enemy cars & game logic
+    let spawnIntervalId = null;
+    let enemyObjects = [];
+    let playerSpeed = cars.find(c => c.id === selectedCarId).speed;
+
+    // Track invincibility state
+    let isInvincible = false;
+
+    function spawnEnemy() {
+      const enemy = document.createElement('div');
+      enemy.classList.add('enemy-car');
+
+      const lane = Math.random() < 0.5 ? 0 : 1;
+      enemy.style.left = `${screenCenter + laneOffsets[lane]}px`;
+      enemy.style.top = `-200px`;
+
+      gameContainer.appendChild(enemy);
+
+      let enemyY = -200;
+      const enemySpeed = 5;
+
+      let animationFrameId;
+
+      function moveEnemy() {
+        enemyY += enemySpeed;
+        enemy.style.top = `${enemyY}px`;
+
+        const playerRect = playerCar.getBoundingClientRect();
+        const enemyRect = enemy.getBoundingClientRect();
+
+        // Collision detection with invincibility check
+        if (
+          playerRect.left < enemyRect.right &&
+          playerRect.right > enemyRect.left &&
+          playerRect.top < enemyRect.bottom &&
+          playerRect.bottom > enemyRect.top
+        ) {
+          if (isInvincible && demonUsesLeft > 0) {
+            demonUsesLeft--;
+            updateInvincibleUsesDisplay();
+            // Remove enemy without penalty
+            gameContainer.removeChild(enemy);
+            cancelAnimationFrame(animationFrameId);
+            enemyObjects = enemyObjects.filter(eo => eo.enemy !== enemy);
+            // If uses exhausted, remove invincibility
+            if (demonUsesLeft <= 0) {
+              isInvincible = false;
+              alert("Your invincibility from The Demon car has ended!");
+            }
+            return;
+          } else {
+            coins = Math.max(0, coins - 1);
+            coinCounter.textContent = `Coins: ${coins}`;
+            gameContainer.removeChild(enemy);
+            cancelAnimationFrame(animationFrameId);
+            enemyObjects = enemyObjects.filter(eo => eo.enemy !== enemy);
+            return;
+          }
+        }
+
+        if (enemyY > window.innerHeight) {
+          gameContainer.removeChild(enemy);
+          cancelAnimationFrame(animationFrameId);
+          enemyObjects = enemyObjects.filter(eo => eo.enemy !== enemy);
+        } else {
+          animationFrameId = requestAnimationFrame(moveEnemy);
+        }
+      }
+      animationFrameId = requestAnimationFrame(moveEnemy);
+
+      enemyObjects.push({ enemy, animationFrameId, moveEnemy });
+    }
+
+    function startSpawning() {
+      if (!spawnIntervalId) {
+        spawnIntervalId = setInterval(spawnEnemy, 2000);
+      }
+      enemyObjects.forEach(eo => {
+        if (!eo.animationFrameId) {
+          eo.animationFrameId = requestAnimationFrame(eo.moveEnemy);
+        }
+      });
+    }
+
+    function stopSpawning() {
+      if (spawnIntervalId) {
+        clearInterval(spawnIntervalId);
+        spawnIntervalId = null;
+      }
+      enemyObjects.forEach(eo => {
+        if (eo.animationFrameId) {
+          cancelAnimationFrame(eo.animationFrameId);
+          eo.animationFrameId = null;
+        }
+      });
+    }
+
+    startSpawning();
+
+    // Quiz logic
+    const earnBtn = document.getElementById('earn-coins-btn');
+    const quizModal = document.getElementById('quiz-modal');
+    const questionText = document.getElementById('quiz-question');
+    const answerButtons = document.querySelectorAll('.quiz-btn[data-answer]');
+    const closeQuiz = document.getElementById('close-quiz');
+
+    const allQuestions = [
+      { q: "What does 'Kakuj' mean in Hazic?", options: ["Cat", "Dog", "Apple", "House"], correct: "A" },
+      { q: "How do you say 'Big' in Hazic?", options: ["Yulin", "Bacho", "Grandan", "Kranken"], correct: "C" },
+      { q: "What is the Hazic word for 'Water'?", options: ["Tsebyu", "Shifi", "Mekar", "Laku"], correct: "A" },
+      { q: "How do you say 'Thank you' in Hazic?", options: ["Spasiba", "Gracias", "Danke", "Merci"], correct: "A" },
+      { q: "What does 'Hak' mean in Hazic?", options: ["Hello", "Goodbye", "Please", "Sorry"], correct: "A" },
+      { q: "What color is 'Bano' in Hazic?", options: ["Red", "Blue", "Green", "Yellow"], correct: "B" },
+      { q: "Translate 'House' to Hazic.", options: ["Kakuj", "Laku", "Bano", "Mekar"], correct: "B" },
+      { q: "What is 'Dog' in Hazic?", options: ["Kranken", "Bacho", "Yulin", "Tsebyu"], correct: "B" },
+      { q: "How do you say 'Food' in Hazic?", options: ["Flabs", "Tsebyu", "Shifi", "Laku"], correct: "A" },
+      { q: "What is 'Friend' in Hazic?", options: ["Yulin", "Bacho", "Tsebyu", "Mekar"], correct: "A" },
+      { q: "Translate 'Night' to Hazic.", options: ["Kakuj", "Shifi", "Bano", "Yulin"], correct: "D" },
+      { q: "What does 'Spasiba' mean?", options: ["Hello", "Thank you", "Goodbye", "Please"], correct: "B" },
+      { q: "How do you say 'Run' in Hazic?", options: ["Kakar", "Takar", "Hakak", "Yakar"], correct: "C" },
+      { q: "What is 'Sun' in Hazic?", options: ["Laku", "Bano", "Mekar", "Kranken"], correct: "C" },
+      { q: "Translate 'Tree' to Hazic.", options: ["Mekar", "Shifi", "Yulin", "Bano"], correct: "A" },
+      { q: "How do you say 'Yes' in Hazic?", options: ["Yesar", "Aknos", "Snuzzle", "Bak"], correct: "A" },
+      { q: "What does 'Bak' mean in Hazic?", options: ["Hello", "Goodbye", "Thank you", "Please"], correct: "B" },
+      { q: "Translate 'Apple' to Hazic.", options: ["Bacho", "Kakuj", "Yulin", "Kranken"], correct: "A" },
+      { q: "What color is 'Kranken' in Hazic?", options: ["Black", "White", "Pink", "Orange"], correct: "D" },
+      { q: "How do you say 'Car' in Hazic?", options: ["Flabs", "Tsebyu", "Shifi", "Boogaloo"], correct: "D" }
+    ];
+
+    // Pick 10 unique random questions for the lesson
+    let questions = [];
+    function pickRandomQuestions() {
+      const shuffled = allQuestions.slice().sort(() => 0.5 - Math.random());
+      questions = shuffled.slice(0, 10);
+    }
+    pickRandomQuestions();
+
+    let currentQuestionIndex = 0;
+    let wrongQuestions = [];
+
+    function showQuestion(index) {
+      const question = questions[index];
+      questionText.textContent = question.q;
+      answerButtons.forEach((btn, i) => {
+        btn.textContent = question.options[i];
+      });
+    }
+
+    answerButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const currentQuestion = questions[currentQuestionIndex];
+        if (btn.dataset.answer === currentQuestion.correct) {
+          coins++;
+          coinCounter.textContent = `Coins: ${coins}`;
+        } else {
+          wrongQuestions.push(currentQuestion);
+        }
+
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+          showQuestion(currentQuestionIndex);
+        } else if (wrongQuestions.length > 0) {
+          // Retry wrong questions only
+          questions = wrongQuestions;
+          wrongQuestions = [];
+          currentQuestionIndex = 0;
+          showQuestion(currentQuestionIndex);
+        } else {
+          quizModal.style.display = 'none';
+          startSpawning();
+          // Prepare next lesson questions randomly for next time
+          pickRandomQuestions();
+        }
+      });
+    });
+    earnBtn.addEventListener('click', () => {
+      quizModal.style.display = 'block';
+      currentQuestionIndex = 0;
+      wrongQuestions = [];
+      showQuestion(currentQuestionIndex);
+      stopSpawning();
+    });
+
+    closeQuiz.addEventListener('click', () => {
+      quizModal.style.display = 'none';
+      startSpawning();
+    });
+
+    // Garage modal and logic
+    const garageBtn = document.getElementById('go-garage-btn');
+    const garageModal = document.getElementById('garage-modal');
+    const carList = document.getElementById('car-list');
+    const closeGarageBtn = document.getElementById('close-garage');
+    const invincibleUsesDiv = document.getElementById('invincible-uses');
+
+    function updateInvincibleUsesDisplay() {
+      if (demonUsesLeft > 0) {
+        invincibleUsesDiv.style.display = 'block';
+        invincibleUsesDiv.textContent = `Invincibility uses left: ${demonUsesLeft}`;
+      } else {
+        invincibleUsesDiv.style.display = 'none';
+      }
+    }
+
+    function renderGarage() {
+      carList.innerHTML = '';
+      cars.forEach(car => {
+        const owned = ownedCars.has(car.id);
+        const selected = selectedCarId === car.id;
+
+        const carItem = document.createElement('div');
+        carItem.classList.add('car-item');
+        if (selected) carItem.classList.add('car-selected');
+
+        // Car sprite box
+        const spriteDiv = document.createElement('div');
+        spriteDiv.classList.add('car-sprite');
+
+        if (car.sprite.startsWith('http')) {
+          spriteDiv.style.backgroundImage = `url(${car.sprite})`;
+        } else {
+          spriteDiv.textContent = car.sprite; // placeholder text
+          spriteDiv.style.display = 'flex';
+          spriteDiv.style.alignItems = 'center';
+          spriteDiv.style.justifyContent = 'center';
+          spriteDiv.style.color = '#333';
+          spriteDiv.style.fontSize = '14px';
+          spriteDiv.style.fontWeight = 'bold';
+          spriteDiv.style.backgroundColor = '#ddd';
+          spriteDiv.style.textAlign = 'center';
+          spriteDiv.style.padding = '5px';
+          spriteDiv.style.height = '60px';
+          spriteDiv.style.width = '90px';
+        }
+
+        const infoDiv = document.createElement('div');
+        infoDiv.classList.add('car-info');
+
+        const nameDiv = document.createElement('div');
+        nameDiv.classList.add('car-name');
+        nameDiv.textContent = car.name;
+
+        const speedDiv = document.createElement('div');
+        speedDiv.classList.add('car-speed');
+        speedDiv.textContent = `Speed: ${car.description}`;
+
+        const priceDiv = document.createElement('div');
+        priceDiv.classList.add('car-price');
+        priceDiv.textContent = owned ? 'Owned' : `Price: ${car.price} coins`;
+
+        infoDiv.appendChild(nameDiv);
+        infoDiv.appendChild(speedDiv);
+        infoDiv.appendChild(priceDiv);
+
+        carItem.appendChild(spriteDiv);
+        carItem.appendChild(infoDiv);
+
+        carList.appendChild(carItem);
+
+        carItem.addEventListener('click', () => {
+          if (owned) {
+            // Just select car
+            selectedCarId = car.id;
+            isInvincible = car.invincible && demonUsesLeft > 0;
+            updatePlayerCar();
+            renderGarage();
+          } else {
+            // Try to buy car if enough coins
+            if (coins >= car.price) {
+              coins -= car.price;
+              coinCounter.textContent = `Coins: ${coins}`;
+              ownedCars.add(car.id);
+              selectedCarId = car.id;
+              if (car.invincible) demonUsesLeft = car.maxUses;
+              isInvincible = car.invincible && demonUsesLeft > 0;
+              updatePlayerCar();
+              renderGarage();
+              alert(`You purchased and selected "${car.name}"!`);
+            } else {
+              alert('Not enough coins to buy this car.');
+            }
+          }
+        });
+      });
+      updateInvincibleUsesDisplay();
+    }
+
+    garageBtn.addEventListener('click', () => {
+      garageModal.style.display = 'block';
+      stopSpawning();
+      renderGarage();
+    });
+
+    closeGarageBtn.addEventListener('click', () => {
+      garageModal.style.display = 'none';
+      startSpawning();
+    });
+  </script>
+</body>
+</html>
