@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Learn Hazic</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Learn Hazic</h1>
+
+  
+  <a href="Car Racing.html" class="game-link">Play Car Racing</a>
+
+
+  <label for="bgcolor-picker">Choose background color:</label>
+  <select id="bgcolor-picker">
+    <option value="orange" selected>Orange</option>
+    <option value="red">Red</option>
+    <option value="green">Green</option>
+    <option value="blue">Blue</option>
+    <option value="pink">Pink</option>
+  </select>
+
+  <script>
+    const colorPicker = document.getElementById('bgcolor-picker');
+    const root = document.documentElement;
+
+    const colorMap = {
+      orange: '#ff7f50',
+      red: '#e74c3c',
+      green: '#2ecc71',
+      blue: '#3498db',
+      pink: '#ff69b4'
+    };
+
+    colorPicker.addEventListener('change', (e) => {
+      const selected = e.target.value;
+      const hex = colorMap[selected] || '#ff7f50';
+      root.style.setProperty('--orange', hex);
+    });
+  </script>
+</body>
+</html>
